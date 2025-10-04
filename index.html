@@ -1,1 +1,292 @@
-<a href="1947"> 1947 to 1971 </a>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Syllabus & Timer - Topics with Time Left</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
+    <style>
+        /* --- CUSTOM CSS STYLING --- */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #e9ecef;
+            color: #343a40;
+        }
+
+        h1, p {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .timer-container {
+            text-align: center;
+            margin: 20px auto;
+            padding: 15px;
+            background-color: #fff3cd;
+            border-radius: .5rem;
+            max-width: 600px;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #856404;
+        }
+
+        .timer-container span {
+            color: #dc3545;
+            font-size: 1.3em;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin: 20px auto;
+            max-width: 500px;
+        }
+
+        table {
+            background-color: #ffffff;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+
+        th {
+            background-color: #28a745;
+            color: white;
+            cursor: pointer;
+            position: relative;
+        }
+
+        th.sortable:hover {
+            background-color: #218838;
+        }
+
+        th.sortable::after {
+            content: '';
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.8em;
+            opacity: 0.6;
+        }
+
+        th.sortable.asc::after {
+            content: ' ▲';
+        }
+
+        th.sortable.desc::after {
+            content: ' ▼';
+        }
+
+        .topic-time-left {
+            font-size: 0.85em;
+            color: #6c757d; /* Muted text color for time left */
+            padding-left: 20px; /* Indent slightly */
+            background-color: #f8f9fa; /* Lighter background for time row */
+            border-bottom: 1px solid #e9ecef; /* Separator */
+        }
+        .topic-time-left.imminent {
+            color: #dc3545; /* Red for topics with little time left */
+            font-weight: bold;
+        }
+        .topic-time-left.past-due {
+            color: #6c757d; /* Keep muted for past due, or change to reflect it's past */
+            font-style: italic;
+        }
+
+        .contact-info {
+            text-align: center;
+            margin-top: 2rem;
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+
+        <div class="timer-container">
+            Countdown to October 25, 2025: <span id="countdown"></span>
+        </div>
+
+        <div class="table-responsive table-container">
+            <table id="syllabusTable" class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th data-column="topic" class="sortable">বিষয়সমূহ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Table rows will be populated by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+
+        <p class="contact-info">যোগাযোগ: 01320820854</p>
+    </div>
+
+    <!-- Bootstrap JS (Popper.js and Bootstrap JS) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+    <script>
+        /* --- JAVASCRIPT LOGIC --- */
+        document.addEventListener('DOMContentLoaded', () => {
+            const tableBody = document.querySelector('#syllabusTable tbody');
+            const tableHeaders = document.querySelectorAll('#syllabusTable th.sortable');
+            const countdownElement = document.getElementById('countdown');
+
+            // --- 1. DATA DEFINITION ---
+            // Topics with optional 'targetDate' for time left calculation.
+            // Dates are in YYYY-MM-DD format.
+            const syllabusTopics = [
+                { name: 'বিন্দু, রেখা ও কোণ', targetDate: null },
+                { name: 'বয়স (পিতা-পুত্র)', targetDate: '2025-10-05' },
+                { name: 'ত্রিভুজ', targetDate: null },
+                { name: 'পরিমাপ', targetDate: null },
+                { name: 'চতুর্ভুজ ও বহুভুজ', targetDate: null },
+                { name: 'উৎপাদকে বিশ্লেষণ', targetDate: '2025-10-21' },
+                { name: 'বৃত্ত', targetDate: null },
+                { name: 'বীজগণিতীয় সূত্রাবলি ও মান নির্ণয়', targetDate: '2025-10-04' }, // Today
+                { name: 'ঘন জ্যামিতি', targetDate: null },
+                { name: 'বীজগণিতীয় ভগ্নাংশ, লসাগু ও গসাগু', targetDate: '2025-10-05' }, // Tomorrow
+                { name: 'পরিমিতি', targetDate: null },
+                { name: 'সমীকরণ', targetDate: '2025-10-12' },
+                { name: 'সংখ্যা', targetDate: null },
+                { name: 'সূচক ও সূচকীয় ফাংশন', targetDate: '2025-10-14' },
+                { name: 'শতকরা', targetDate: null },
+                { name: 'লগারিদম ও লগারিদমীয় ফাংশন', targetDate: '2025-10-21' },
+                { name: 'লাভ-ক্ষতি', targetDate: null },
+                { name: 'ধারা', targetDate: null },
+                { name: 'মুনাফা/সুদকষা', targetDate: null },
+                { name: 'বিন্যাস ও সমাবেশ', targetDate: null },
+                { name: 'ল.সা.গু/গ.সা.গু', targetDate: null },
+                { name: 'সম্ভাব্যতা', targetDate: null },
+                { name: 'অনুপাত-সমানুপাত/এলিগেশন', targetDate: null },
+                { name: 'সেট ও ভেনচিত্র', targetDate: null },
+                { name: 'গড়', targetDate: null },
+                { name: 'অসমতা', targetDate: null },
+                { name: 'ঐকিক নিয়ম, নল-চৌবাচ্চা এবং কাজ', targetDate: null },
+                { name: 'ত্রিকোণমিতি', targetDate: null },
+                { name: 'দূরত্ব-সময়-গতিবেগ, ট্রেন, নৌকা ও স্রোত', targetDate: null },
+                { name: 'মানসিক দক্ষতা (প্রয়োজন অনুসারে)', targetDate: null }
+            ];
+
+            let currentSortDirection = 'asc';
+
+            // --- Helper to calculate time left for a specific date ---
+            function getTimeLeftMessage(targetDateString) {
+                if (!targetDateString) return 'কোনো নির্দিষ্ট তারিখ নেই';
+
+                const targetDateTime = new Date(targetDateString + 'T00:00:00').getTime(); // Assume start of day
+                const now = new Date().getTime();
+                let distance = targetDateTime - now;
+
+                if (distance < 0) {
+                    return 'তারিখ পার হয়ে গেছে';
+                }
+
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                distance %= (1000 * 60 * 60 * 24);
+                const hours = Math.floor(distance / (1000 * 60 * 60));
+                distance %= (1000 * 60 * 60);
+                const minutes = Math.floor(distance / (1000 * 60));
+                distance %= (1000 * 60);
+                const seconds = Math.floor(distance / 1000);
+
+                let message = 'বাকি: ';
+                if (days > 0) message += `${days}d `;
+                if (hours > 0) message += `${hours}h `;
+                if (minutes > 0) message += `${minutes}m `;
+                message += `${seconds}s`;
+
+                return message.trim();
+            }
+
+            // --- 2. TABLE RENDERING FUNCTIONS ---
+            function populateTable(data) {
+                tableBody.innerHTML = '';
+                data.forEach(item => {
+                    // Main topic row
+                    const topicRow = document.createElement('tr');
+                    topicRow.innerHTML = `<td>${item.name}</td>`;
+                    tableBody.appendChild(topicRow);
+
+                    // Time left row (if targetDate exists)
+                    const timeLeftRow = document.createElement('tr');
+                    const timeLeftMessage = getTimeLeftMessage(item.targetDate);
+                    let timeClass = 'topic-time-left';
+
+                    if (item.targetDate) {
+                        const targetDateTime = new Date(item.targetDate + 'T00:00:00').getTime();
+                        const now = new Date().getTime();
+                        const distance = targetDateTime - now;
+                        if (distance < 0) {
+                            timeClass += ' past-due'; // Grey out past dates
+                        } else if (distance < (1000 * 60 * 60 * 24 * 3)) { // Less than 3 days
+                            timeClass += ' imminent'; // Highlight imminent dates
+                        }
+                    }
+
+                    timeLeftRow.innerHTML = `<td class="${timeClass}">${timeLeftMessage}</td>`;
+                    tableBody.appendChild(timeLeftRow);
+                });
+            }
+
+            // --- 3. SORTING LOGIC ---
+            function sortTable() {
+                currentSortDirection = (currentSortDirection === 'asc') ? 'desc' : 'asc';
+
+                tableHeaders.forEach(header => {
+                    header.classList.remove('asc', 'desc');
+                });
+                document.querySelector(`[data-column="topic"]`).classList.add(currentSortDirection);
+
+                const sortedData = [...syllabusTopics].sort((a, b) => {
+                    let valA = (a.name || '').toString().toLowerCase();
+                    let valB = (b.name || '').toString().toLowerCase();
+                    return currentSortDirection === 'asc' ? valA.localeCompare(valB, 'bn', { sensitivity: 'base' }) : valB.localeCompare(valA, 'bn', { sensitivity: 'base' });
+                });
+
+                populateTable(sortedData);
+            }
+
+            // --- 4. TIMER LOGIC ---
+            function updateCountdown() {
+                const targetDate = new Date('October 25, 2025 00:00:00 GMT+06:00').getTime();
+                const now = new Date().getTime();
+                const distance = targetDate - now;
+
+                if (distance < 0) {
+                    countdownElement.innerHTML = "Deadline passed!";
+                    clearInterval(countdownInterval);
+                    return;
+                }
+
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                countdownElement.innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+            }
+
+            // --- 5. INITIALIZATION & EVENT LISTENERS ---
+            populateTable(syllabusTopics);
+
+            tableHeaders.forEach(header => {
+                header.addEventListener('click', () => {
+                    sortTable();
+                });
+            });
+
+            updateCountdown();
+            const countdownInterval = setInterval(updateCountdown, 1000);
+
+            // Optional: Re-populate table periodically to update time left messages for topics
+            // setInterval(() => populateTable(syllabusTopics), 5000); // Update every 5 seconds
+        });
+    </script>
+</body>
+</html>
+
