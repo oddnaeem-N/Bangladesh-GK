@@ -7,22 +7,24 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <style>
 body { background-color:#fafafa; font-family:"Noto Sans Bengali", sans-serif; }
-.question-card { border:1px solid #e3e3e3; border-radius:6px; padding:12px 16px; margin-bottom:10px; }
+.question-card { border:1px solid #e3e3e3; border-radius:6px; padding:12px 16px; margin-bottom:10px; background:#fff; }
 .option { display:flex; align-items:center; gap:10px; border:1px solid transparent; padding:6px 8px; border-radius:5px; cursor:pointer; transition:0.2s; }
 .option:hover { background-color: rgba(0,123,255,0.05); }
+.option.disabled { pointer-events:none; opacity:.8; }
 .circle { width:28px; height:28px; border-radius:50%; border:1px solid #888; display:flex; justify-content:center; align-items:center; font-weight:600; color:#444; flex-shrink:0; }
 .correct { border-color:#198754; background-color:rgba(25,135,84,0.08); color:#198754; }
 .wrong { border-color:#dc3545; background-color:rgba(220,53,69,0.08); color:#dc3545; }
 .answer, .explanation { display:none; margin-top:6px; }
 .answer { font-weight:600; color:#198754; }
 .explanation { font-style:italic; color:#555; }
+.pagination { margin-top:10px; }
 </style>
 </head>
 <body>
 <div class="container py-3">
-<h5 class="text-center mb-3">সাধারণ জ্ঞান — প্রশ্নব্যাংক</h5>
-<div id="quiz-container"></div>
-<ul class="pagination justify-content-center" id="pager"></ul>
+  <h5 class="text-center mb-3">সাধারণ জ্ঞান — প্রশ্নব্যাংক</h5>
+  <div id="quiz-container"></div>
+  <ul class="pagination justify-content-center" id="pager"></ul>
 </div>
 
 <script>
@@ -31,22 +33,30 @@ const letters = ["ক","খ","গ","ঘ"];
 let questionsData = [];
 let answeredCount = 0, batchAnswers = [];
 
+// Load quiz JSON from API or fallback to local GitHub-hosted file
 async function loadQuizData(){
-  const res = await fetch('/api/items');
-  questionsData = await res.json();
-  renderPage();
+  try {
+    const res = await fetch('data.json'); // GitHub Pages friendly
+    questionsData = await res.json();
+    renderPage();
+  } catch(e) {
+    console.error('Could not load quiz data', e);
+    document.getElementById('quiz-container').innerHTML = '<p class="text-center text-danger">কুইজ ডেটা লোড করা যায়নি।</p>';
+  }
 }
 
 function renderPage(page=1){
   const container = document.getElementById("quiz-container");
   container.innerHTML = "";
   const start=(page-1)*PAGE_SIZE, end=Math.min(start+PAGE_SIZE, questionsData.length);
+
   for(let i=start;i<end;i++){
     const q=questionsData[i];
     const card=document.createElement("div"); card.className="question-card";
     const qText=document.createElement("div"); qText.innerHTML=`<strong>${q.id}. ${q.question}</strong>`;
     card.appendChild(qText);
-    q.options.split(',').forEach((opt,idx)=>{
+
+    (q.options instanceof Array ? q.options : q.options.split(',')).forEach((opt,idx)=>{
       const optDiv=document.createElement("div"); optDiv.className="option";
       optDiv.innerHTML=`<div class="circle">${letters[idx]}</div><div>${opt}</div>`;
       optDiv.addEventListener("click", ()=>{
@@ -55,7 +65,7 @@ function renderPage(page=1){
         answeredCount++; batchAnswers.push(card);
         if(opt.trim()===q.answer.trim()) optDiv.classList.add("correct");
         else optDiv.classList.add("wrong");
-        if(answeredCount%5===0||answeredCount===questionsData.length){
+        if(answeredCount%5===0 || answeredCount===questionsData.length){
           batchAnswers.forEach(b=>{
             b.querySelector(".answer").style.display="block";
             b.querySelector(".explanation").style.display="block";
@@ -65,18 +75,20 @@ function renderPage(page=1){
       });
       card.appendChild(optDiv);
     });
+
     const ans=document.createElement("div"); ans.className="answer"; ans.innerHTML=`উত্তর: ${q.answer}`;
-    const exp=document.createElement("div"); exp.className="explanation"; exp.innerHTML=q.explanation;
+    const exp=document.createElement("div"); exp.className="explanation"; exp.innerHTML=q.explanation || '';
     card.appendChild(ans); card.appendChild(exp);
     container.appendChild(card);
   }
+
   // pagination
   const pager=document.getElementById("pager"); pager.innerHTML="";
   const totalPages=Math.ceil(questionsData.length/PAGE_SIZE);
   for(let p=1;p<=totalPages;p++){
     const li=document.createElement("li"); li.className="page-item"+(p===page?" active":"");
     const a=document.createElement("a"); a.className="page-link"; a.textContent=p; a.href="#";
-    a.addEventListener("click",(e)=>{e.preventDefault(); renderPage(p);});
+    a.addEventListener("click",(e)=>{ e.preventDefault(); renderPage(p); });
     li.appendChild(a); pager.appendChild(li);
   }
 }
