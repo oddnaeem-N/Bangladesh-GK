@@ -65,7 +65,7 @@ function renderPage(page=1){
         answeredCount++; batchAnswers.push(card);
         if(opt.trim()===q.answer.trim()) optDiv.classList.add("correct");
         else optDiv.classList.add("wrong");
-        if(answeredCount%5===0 || answeredCount===questionsData.length){
+        if(answeredCount%1===0 || answeredCount===questionsData.length){
           batchAnswers.forEach(b=>{
             b.querySelector(".answer").style.display="block";
             b.querySelector(".explanation").style.display="block";
